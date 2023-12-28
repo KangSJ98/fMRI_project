@@ -133,15 +133,28 @@ def rotate_clockwise(array):
 def rotate_counterclockwise(array):
     return [list(row) for row in reversed(list(zip(*array)))]
 
+def check_b_possible(current_map, shape_position):
+    # check control_b attach b1 or b2
+    devide = (current_map[max(0, shape_position[1][1] - 1)][shape_position[1][0]] + 
+                current_map[shape_position[1][1]][max(0, shape_position[1][0] - 1)] + 
+                current_map[shape_position[1][1] + 1][shape_position[1][0]] + 
+                current_map[shape_position[1][1]][shape_position[1][0] + 1]
+    )
+    if devide or (current_map[0][shape_position[1][0]] == 1):
+        return False
+    else:
+        return True
+
 
 clock = pygame.time.Clock()
 game_over = False
-stage = 0
+phase = 0
 shape_position = [[0,2], [2,0], [15,0]]
 
 # Game Loof
 while not game_over:
     stage_end = False
+    phase = 0
 
     while not stage_end:
         move = 0
@@ -162,21 +175,33 @@ while not game_over:
                 elif event.key == pygame.K_SPACE:
                     move = 5
 
-        if stage == 0:
+        if phase == 0:
             if move == 3:   # down
                 shape_position[0], _ = move_shape(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A, 0, 1)
             elif move == 4: # up
                 shape_position[0], _ = move_shape(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A, 0, -1)
             elif move == 5: # space
-                stage = 1
-            if move:
-                print(shape_position)
+                phase = 1
         
-        if stage == 1:
+        if phase == 1:
             if move == 1:   # left
-                shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotate_clockwise(map_control_b1), WIDTH_B, HEIGHT_B)
-                print(map_control_b1)
+                rotated_map = rotate_clockwise(map_control_b1)
+                shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
+
+                if check_b_possible(rotated_map, shape_position):
+                    stage_end = True
+                else:
+                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
+                    shape_combine = rotate_counterclockwise(rotated_map)
+                    phase = 2
                 
             elif move == 2: # right
-                shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotate_counterclockwise(map_control_b2), WIDTH_B, HEIGHT_B)
-                print(map_control_b2)
+                rotated_map = rotate_counterclockwise(map_control_b2)
+                shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
+
+                if check_b_possible(rotated_map, shape_position):
+                    stage_end = True
+                else:
+                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
+                    shape_combine = rotate_clockwise(rotated_map)
+                    phase = 2
