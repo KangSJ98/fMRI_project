@@ -2,13 +2,13 @@
 control_a = 5x1
 control_b1 = 5x5 (왼)
 control_b2 = 5x5 (오)
-target = 9x35, 시작은 하단 6x35 에서만
+target = 14x35, 시작은 하단 6x35 에서만, 9줄을 넘어가면 game over
 
 배경은 흰색, control 배경은 회색, 블록은 검은색, 블록 사이즈를 그리드보다 살짝 작게해서 흰색 배경으로 구분되게
 control_b1의 위치는 (8,3) 부터 (12,7))
 control_b2의 위치는 (22,3) 부터 (26,7)
 control_a의 위치는 (17,3)) 부터 (17,7)
-target의 위치는 (0,11) 부터 (34,20)까지
+target의 위치는 (0,8) 부터 (34,22)까지
 
 1. control_a에서 1x1 control block 위치 선택
 2. 1x1 control block 좌, 우 선택
@@ -26,12 +26,12 @@ pygame.init()
 
 
 # screen setting
-WIDTH_SCREEN, HEIGHT_SCREEN = 1400, 840
+WIDTH_SCREEN, HEIGHT_SCREEN = 1400, 920
 BLOCK_SIZE = 40
-WIDTH_GAME, HEIGHT_GAME = 35, 20
+WIDTH_GAME, HEIGHT_GAME = 35, 22
 WIDTH_A, HEIGHT_A = 1, 5
 WIDTH_B, HEIGHT_B = 5, 5
-WIDTH_TARGET, HEIGHT_TARGET = 35, 9
+WIDTH_TARGET, HEIGHT_TARGET = 35, 14
 WIN = pygame.display.set_mode((WIDTH_SCREEN, HEIGHT_SCREEN))
 pygame.display.set_caption("Tetris-like 게임")
 
@@ -165,6 +165,8 @@ while not game_over:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     game_over, stage_end = True, True
+                elif event.key == pygame.K_r:
+                    stage_end = True
                 elif event.key == pygame.K_LEFT:
                     move = 1
                 elif event.key == pygame.K_RIGHT:
@@ -200,6 +202,7 @@ while not game_over:
                     phase = 2
 
                 map_control_b1 = rotate_clockwise(rotated_map)
+                shape_combine = map_control_b1
                 
             elif move == 2: # right
                 shape_position[1][0] = 4 - shape_position[1][0]
@@ -212,6 +215,15 @@ while not game_over:
                     rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                     phase = 2
                 map_control_b2 = rotate_counterclockwise(rotated_map)
+                shape_combine = map_control_b2
+
+        # phase 2
+        if phase == 2:
+            if move == 1:   # left
+                shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, -1, 0)
+            if move == 2:   # right
+                shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, 1, 0)
+
 
         ### visualization
         ## fill all layer into background map (0 : WHITE, 1 : BLACK, 2 : GRAY)
@@ -224,12 +236,18 @@ while not game_over:
         for y in range(HEIGHT_B):
             for x in range(WIDTH_B):
                 map_background[y + 3][x + 8] = 2 - map_control_b1[y][x]
-                map_background[y + 3][x + 22] = 2 - map_control_b2[y][x]
 
+                map_background[y + 3][x + 22] = 2 - map_control_b2[y][x]
         # target
         for y in range(HEIGHT_TARGET):
             for x in range(WIDTH_TARGET):
-                map_background[y + 11][x] = map_target[y][x]
+                map_background[y + 8][x] = map_target[y][x]    
+
+        # control combine
+        if phase == 2:
+            for y in range(HEIGHT_B):
+                for x in range(WIDTH_B):
+                    map_background[y + shape_position[2][1] + 8][x + shape_position[2][0]] = shape_combine[y][x]
 
         ## render
         # initiate background white
@@ -257,8 +275,3 @@ while not game_over:
 
         # FPS
         clock.tick(10)
-        print(shape_position)
-
-        
-
-
