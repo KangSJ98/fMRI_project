@@ -1,1 +1,1 @@
-# fMIR_project
+# fMRI_project
