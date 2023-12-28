@@ -26,7 +26,7 @@ pygame.init()
 
 
 # screen setting
-WIDTH_SCREEN, HEIGHT_SCREEN = 1400, 920
+WIDTH_SCREEN, HEIGHT_SCREEN = 1404, 920
 BLOCK_SIZE = 40
 WIDTH_GAME, HEIGHT_GAME = 35, 22
 WIDTH_A, HEIGHT_A = 1, 5
@@ -62,7 +62,7 @@ shape_control_b = [
 map_control_b1 = [
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
-    [0, 1, 1, 0, 0],
+    [1, 1, 1, 0, 0],
     [0, 0, 1, 0, 0],
     [0, 0, 1, 1, 0]
 ]
@@ -83,9 +83,9 @@ for i in range(HEIGHT_TARGET - 6, HEIGHT_TARGET):
     for j in range(WIDTH_TARGET):
         map_target[i][j] = 1
 for i in range(6):
-    map_target[4][i+8] = 0
+    map_target[HEIGHT_TARGET - 6][i+8] = 0
 for i in range(3):
-    map_target[5][i+10] = 0
+    map_target[HEIGHT_TARGET - 5][i+10] = 0
 
 # background layer
 map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
@@ -221,8 +221,15 @@ while not game_over:
         if phase == 2:
             if move == 1:   # left
                 shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, -1, 0)
-            if move == 2:   # right
+            elif move == 2: # right
                 shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, 1, 0)
+            elif move == 5: #space
+                shape_position[2] = hard_drop(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET)
+                stage_end = True
+            for y, row in enumerate(shape_combine):
+                for x, value in enumerate(row):
+                    if value:
+                        map_target[y + shape_position[2][1]][x + shape_position[2][0]] = shape_combine[y][x]
 
 
         ### visualization
@@ -241,13 +248,7 @@ while not game_over:
         # target
         for y in range(HEIGHT_TARGET):
             for x in range(WIDTH_TARGET):
-                map_background[y + 8][x] = map_target[y][x]    
-
-        # control combine
-        if phase == 2:
-            for y in range(HEIGHT_B):
-                for x in range(WIDTH_B):
-                    map_background[y + shape_position[2][1] + 8][x + shape_position[2][0]] = shape_combine[y][x]
+                map_background[y + 8][x] = map_target[y][x]
 
         ## render
         # initiate background white
@@ -275,3 +276,7 @@ while not game_over:
 
         # FPS
         clock.tick(10)
+
+        
+
+
