@@ -5,10 +5,10 @@ control_b2 = 5x5 (오)
 target = 9x35, 시작은 하단 6x35 에서만
 
 배경은 흰색, control 배경은 회색, 블록은 검은색, 블록 사이즈를 그리드보다 살짝 작게해서 흰색 배경으로 구분되게
-control_b1의 위치는 (3,8) 부터 (7,12)
-control_b2의 위치는 (3,22) 부터 (7,26)
-control_a의 위치는 (3,17) 부터 (7,17)
-target의 위치는 (11,0) 부터 (20, 34)까지
+control_b1의 위치는 (8,3) 부터 (12,7))
+control_b2의 위치는 (22,3) 부터 (26,7)
+control_a의 위치는 (17,3)) 부터 (17,7)
+target의 위치는 (0,11) 부터 (34,20)까지
 
 1. control_a에서 1x1 control block 위치 선택
 2. 1x1 control block 좌, 우 선택
@@ -146,6 +146,7 @@ def check_b_possible(current_map, shape_position):
         return True
 
 
+
 clock = pygame.time.Clock()
 game_over = False
 phase = 0
@@ -185,18 +186,7 @@ while not game_over:
         
         if phase == 1:
             if move == 1:   # left
-                rotated_map = rotate_clockwise(map_control_b1)
-                shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
-
-                if check_b_possible(rotated_map, shape_position):
-                    stage_end = True
-                else:
-                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
-                    shape_combine = rotate_counterclockwise(rotated_map)
-                    phase = 2
-                
-            elif move == 2: # right
-                rotated_map = rotate_counterclockwise(map_control_b2)
+                rotated_map = rotate_counterclockwise(map_control_b1)
                 shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
 
                 if check_b_possible(rotated_map, shape_position):
@@ -205,3 +195,52 @@ while not game_over:
                     rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                     shape_combine = rotate_clockwise(rotated_map)
                     phase = 2
+                
+            elif move == 2: # right
+                rotated_map = rotate_clockwise(map_control_b2)
+                shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
+
+                if check_b_possible(rotated_map, shape_position):
+                    stage_end = True
+                else:
+                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
+                    shape_combine = rotate_counterclockwise(rotated_map)
+                    phase = 2
+
+        ### visualization
+        ## fill all layer into background map (0 : WHITE, 1 : BLACK, 2 : GRAY)
+        # control a
+        for y in range(HEIGHT_A):
+            map_background[y + 3][17] = 2
+        map_background[shape_position[0][1] + 3][17] = 1
+
+        # control b
+        for y in range(HEIGHT_B):
+            for x in range(WIDTH_B):
+                map_background[y + 3][x + 8] = 2 - map_control_b1[y][x]
+                map_background[y + 3][x + 22] = 2 - map_control_b2[y][x]
+
+        # target
+        for y in range(HEIGHT_TARGET):
+            for x in range(WIDTH_TARGET):
+                map_background[y + 11][x] = map_target[y][x]
+
+        ## render
+        # initiate background white
+        WIN.fill(WHITE)
+
+        # 0 : WHITE, 1 : BLACK, 2 : GRAY
+        for y, row in enumerate(map_background):
+            for x, value in enumerate(row):
+                if value == 1:
+                    pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                elif value == 2:
+                    pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+
+        # screen update
+        pygame.display.update()
+
+        # FPS
+        clock.tick(10)
+
+
