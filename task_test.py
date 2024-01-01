@@ -24,7 +24,6 @@ import sys
 # initiate
 pygame.init()
 
-
 # screen setting
 WIDTH_SCREEN, HEIGHT_SCREEN = 1404, 920
 BLOCK_SIZE = 40
@@ -42,6 +41,10 @@ GRAY = (128, 128, 128)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+
+# parameter
+LINE_SCORE = 1
+
 
 # control_a
 shape_control_a = [
@@ -62,8 +65,8 @@ shape_control_b = [
 map_control_b1 = [
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
     [1, 1, 1, 0, 0],
-    [0, 0, 1, 0, 0],
     [0, 0, 1, 1, 0]
 ]
 
@@ -86,6 +89,8 @@ for i in range(6):
     map_target[HEIGHT_TARGET - 6][i+8] = 0
 for i in range(3):
     map_target[HEIGHT_TARGET - 5][i+10] = 0
+for i in range(4):
+    map_target[HEIGHT_TARGET - 3][i + 14] = 0
 
 # background layer
 map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
@@ -145,11 +150,25 @@ def check_b_possible(current_map, shape_position):
     else:
         return True
 
+def remove_line(current_map, score):
+    for y in range(HEIGHT_TARGET):
+        if sum(current_map[y]) == WIDTH_TARGET:
+            del current_map[y]
+            current_map.insert(0, [0] * WIDTH_TARGET)
+            score += LINE_SCORE
+        
+    return current_map, score
 
+def check_game_over(current_map):
+    if sum(current_map[HEIGHT_TARGET-10]) > 0:
+        return True
+    else:
+        return False
 
 clock = pygame.time.Clock()
 game_over = False
-
+score = 0
+map_target, _ = remove_line(map_target, score)
 
 # Game Loof
 while not game_over:
@@ -185,7 +204,6 @@ while not game_over:
             elif move == 4: # up
                 shape_position[0], _ = move_shape(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A, 0, -1)
             elif move == 5: # space
-                # hard_drop(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A)
                 shape_position[1][0] = shape_position[0][1]
                 phase = 1
         
@@ -214,6 +232,7 @@ while not game_over:
                 else:
                     rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                     phase = 2
+
                 map_control_b2 = rotate_counterclockwise(rotated_map)
                 shape_combine = map_control_b2
 
@@ -226,11 +245,16 @@ while not game_over:
             elif move == 5: #space
                 shape_position[2] = hard_drop(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET)
                 stage_end = True
+
             for y, row in enumerate(shape_combine):
                 for x, value in enumerate(row):
                     if value:
                         map_target[y + shape_position[2][1]][x + shape_position[2][0]] = shape_combine[y][x]
-
+            
+            map_target, score = remove_line(map_target,score)
+            game_over = check_game_over(map_target)
+            
+            
 
         ### visualization
         ## fill all layer into background map (0 : WHITE, 1 : BLACK, 2 : GRAY)
@@ -276,7 +300,4 @@ while not game_over:
 
         # FPS
         clock.tick(10)
-
-        
-
 
