@@ -2,12 +2,16 @@
 control_a = 5x1
 control_b1 = 5x5 (왼)
 control_b2 = 5x5 (오)
+next_control_b1 = 3x3
+next_control_b2 = 3x3
 target = 14x35, 시작은 하단 6x35 에서만, 9줄을 넘어가면 game over
 
 배경은 흰색, control 배경은 회색, 블록은 검은색, 블록 사이즈를 그리드보다 살짝 작게해서 흰색 배경으로 구분되게
+control_a의 위치는 (17,3)) 부터 (17,7)
 control_b1의 위치는 (8,3) 부터 (12,7))
 control_b2의 위치는 (22,3) 부터 (26,7)
-control_a의 위치는 (17,3)) 부터 (17,7)
+next_control_b1의 위치는 (4,4) 부터 (7,7)
+next_control_b2의 위치는 (28,4)부터 (33,7)
 target의 위치는 (0,8) 부터 (34,22)까지
 
 1. control_a에서 1x1 control block 위치 선택
@@ -178,10 +182,13 @@ while not game_over:
     while not trial_over:
         # trial initiate
         stage_end = False
+        error_b = False
         phase = 1
         shape_position = [[0,2], [2,0], [15,0]]
         map_control_b1 = b_database[b1_sequence[b1_num]]
+        next_map_control_b1 = b_database[b1_sequence[b1_num + 1]]
         map_control_b2 = b_database[b2_sequence[b2_num]]
+        next_map_control_b2 = b_database[b2_sequence[b2_num + 1]]
 
         while not stage_end:
             # keybord input
@@ -221,10 +228,11 @@ while not game_over:
                     rotated_map = rotate_counterclockwise(map_control_b1)
 
                     # check option b is possible
-                    # im impossible : go to phase 1
+                    # if impossible : go to phase 1
                     if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
                         rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
                         stage_end = True
+                        error_b = True
                     else:
                         rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                         phase = 3
@@ -239,10 +247,11 @@ while not game_over:
                     rotated_map = rotate_clockwise(map_control_b2)
 
                     # check option b is possible
-                    # im impossible : go to phase 1
+                    # if impossible : go to phase 1
                     if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
                         rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
                         stage_end = True
+                        error_b = True
                     else:
                         rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                         phase = 3
@@ -296,22 +305,48 @@ while not game_over:
             # initiate background white
             WIN.fill(WHITE)
 
-            # 0 : WHITE, 1 : BLACK, 2 : GRAY
+            # 0 : WHITE, 1 : BLACK, 2 : GRAY, -1 : RED
             for y, row in enumerate(map_background):
                 for x, value in enumerate(row):
                     if value == 1:
-                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.8, BLOCK_SIZE * 0.8))
                     elif value == 2:
-                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.8, BLOCK_SIZE * 0.8))
                     elif value == -1:
-                        pygame.draw.rect(WIN, RED, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                        pygame.draw.rect(WIN, RED, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.8, BLOCK_SIZE * 0.8))
+
+            # draw next block
+            for y, row in enumerate(next_map_control_b1):
+                for x, value in enumerate(row):
+                    if value:
+                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
+                    else:
+                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
+            for y, row in enumerate(next_map_control_b2):
+                for x, value in enumerate(row):
+                    if value:
+                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE * 0.6 + 28 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
+                    else:
+                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE * 0.6 + 28 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
             
-            # show phase
+            # show score, trial, phase
             font = pygame.font.Font(None, 36)
-            text = font.render(f'phase : {phase}', True, BLACK)
+            text = font.render(f'score : {score}    trial : {trial}     phase : {phase}', True, BLACK)
             text_rect = text.get_rect()
             text_rect.bottomleft = (10, WIN.get_height() - 10)
             WIN.blit(text, text_rect)
+
+            if error_b:
+                font = pygame.font.Font(None, 72)
+                text = font.render('Try again', True, RED)
+                text_rect = text.get_rect()
+                text_rect.centerx = WIN.get_width() // 2
+                text_rect.top = BLOCK_SIZE * 8
+
+                WIN.blit(text, text_rect)
+
+                pygame.display.update()
+                pygame.time.delay(1000)
 
             # screen update
             pygame.display.update()
