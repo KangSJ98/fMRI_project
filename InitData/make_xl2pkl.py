@@ -2,12 +2,16 @@
 control_a = 5x1
 control_b1 = 5x5 (왼)
 control_b2 = 5x5 (오)
+next_control_b1 = 3x3
+next_control_b2 = 3x3
 target = 14x35, 시작은 하단 6x35 에서만, 9줄을 넘어가면 game over
 
 배경은 흰색, control 배경은 회색, 블록은 검은색, 블록 사이즈를 그리드보다 살짝 작게해서 흰색 배경으로 구분되게
+control_a의 위치는 (17,3)) 부터 (17,7)
 control_b1의 위치는 (8,3) 부터 (12,7))
 control_b2의 위치는 (22,3) 부터 (26,7)
-control_a의 위치는 (17,3)) 부터 (17,7)
+next_control_b1의 위치는 (4,4) 부터 (7,7)
+next_control_b2의 위치는 (28,4)부터 (33,7)
 target의 위치는 (0,8) 부터 (34,22)까지
 
 1. control_a에서 1x1 control block 위치 선택
@@ -182,7 +186,9 @@ while not game_over:
         phase = 1
         shape_position = [[0,2], [2,0], [15,0]]
         map_control_b1 = b_database[b1_sequence[b1_num]]
+        next_map_control_b1 = b_database[b1_sequence[b1_num + 1]]
         map_control_b2 = b_database[b2_sequence[b2_num]]
+        next_map_control_b2 = b_database[b2_sequence[b2_num + 1]]
 
         while not stage_end:
             # keybord input
@@ -303,11 +309,25 @@ while not game_over:
             for y, row in enumerate(map_background):
                 for x, value in enumerate(row):
                     if value == 1:
-                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.8, BLOCK_SIZE * 0.8))
                     elif value == 2:
-                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.8, BLOCK_SIZE * 0.8))
                     elif value == -1:
-                        pygame.draw.rect(WIN, RED, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                        pygame.draw.rect(WIN, RED, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.8, BLOCK_SIZE * 0.8))
+
+            # draw next block
+            for y, row in enumerate(next_map_control_b1):
+                for x, value in enumerate(row):
+                    if value:
+                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
+                    else:
+                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
+            for y, row in enumerate(next_map_control_b2):
+                for x, value in enumerate(row):
+                    if value:
+                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE * 0.6 + 28 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
+                    else:
+                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE * 0.6 + 28 * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE * 0.6 + 4 * BLOCK_SIZE, BLOCK_SIZE * 0.48, BLOCK_SIZE * 0.48))
             
             # show score, trial, phase
             font = pygame.font.Font(None, 36)
