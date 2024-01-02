@@ -20,6 +20,13 @@ target의 위치는 (0,8) 부터 (34,22)까지
 
 import pygame
 import sys
+import pickle
+import os
+
+# add path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+block_data_path = os.path.join(script_dir, 'InitData', 'Block_Shape_data.pkl')
+target_data_path = os.path.join(script_dir, 'InitData', 'Target_Shape_data.pkl')
 
 # initiate
 pygame.init()
@@ -62,35 +69,18 @@ map_control_a = [
 shape_control_b = [
     [1]
 ]
-map_control_b1 = [
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 0]
-]
 
-map_control_b2 = [
-    [0, 0, 0, 0, 0],
-    [1, 1, 1, 0, 0],
-    [0, 1, 0, 0, 0],
-    [0, 1, 0, 0, 0],
-    [0, 1, 0, 0, 0]
-]
+with open(block_data_path,'rb') as f:
+    b_database = pickle.load(f)
+b1_num = 0
+map_control_b1 = b_database[b1_num]
+b2_num = 0
+map_control_b2 = b_database[b2_num]
 
 # target
-map_target = [[0] * WIDTH_TARGET for _ in range(HEIGHT_TARGET)]
-
-# hole
-for i in range(HEIGHT_TARGET - 6, HEIGHT_TARGET):
-    for j in range(WIDTH_TARGET):
-        map_target[i][j] = 1
-for i in range(6):
-    map_target[HEIGHT_TARGET - 6][i+8] = 0
-for i in range(3):
-    map_target[HEIGHT_TARGET - 5][i+10] = 0
-for i in range(4):
-    map_target[HEIGHT_TARGET - 3][i + 14] = 0
+with open(target_data_path, 'rb') as f:
+    target_database = pickle.load(f)
+map_target = target_database[0]
 
 # background layer
 map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
@@ -175,6 +165,8 @@ while not game_over:
     stage_end = False
     phase = 0
     shape_position = [[0,2], [2,0], [15,0]]
+    map_control_b1 = b_database[b1_num]
+    map_control_b2 = b_database[b2_num]
 
     while not stage_end:
         move = 0
@@ -218,6 +210,7 @@ while not game_over:
                 else:
                     rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                     phase = 2
+                    b1_num += 1
 
                 map_control_b1 = rotate_clockwise(rotated_map)
                 shape_combine = map_control_b1
@@ -232,6 +225,7 @@ while not game_over:
                 else:
                     rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                     phase = 2
+                    b2_num += 1
 
                 map_control_b2 = rotate_counterclockwise(rotated_map)
                 shape_combine = map_control_b2
@@ -300,4 +294,3 @@ while not game_over:
 
         # FPS
         clock.tick(10)
-
