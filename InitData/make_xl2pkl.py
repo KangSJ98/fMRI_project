@@ -305,7 +305,7 @@ while not game_over:
             # initiate background white
             WIN.fill(WHITE)
 
-            # 0 : WHITE, 1 : BLACK, 2 : GRAY
+            # 0 : WHITE, 1 : BLACK, 2 : GRAY, -1 : RED
             for y, row in enumerate(map_background):
                 for x, value in enumerate(row):
                     if value == 1:
