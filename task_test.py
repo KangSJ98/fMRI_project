@@ -24,9 +24,11 @@ import pickle
 import os
 
 # add path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-block_data_path = os.path.join(script_dir, 'InitData', 'Block_Shape_data.pkl')
-target_data_path = os.path.join(script_dir, 'InitData', 'Target_Shape_data.pkl')
+task_dir = os.path.dirname(os.path.abspath(__file__))
+block_data_path = os.path.join(task_dir, 'InitData', 'Block_Shape_data.pkl')
+b1_sequence_data_path = os.path.join(task_dir, 'InitData', 'b1_sequence.pkl')
+b2_sequence_data_path = os.path.join(task_dir, 'InitData', 'b2_sequence.pkl')
+target_data_path = os.path.join(task_dir, 'InitData', 'Target_Shape_data.pkl')
 
 # initiate
 pygame.init()
@@ -72,15 +74,20 @@ shape_control_b = [
 
 with open(block_data_path,'rb') as f:
     b_database = pickle.load(f)
-b1_num = 0
-map_control_b1 = b_database[b1_num]
-b2_num = 0
-map_control_b2 = b_database[b2_num]
+with open(b1_sequence_data_path, 'rb') as f:
+    b1_sequence = pickle.load(f)
+with open(b2_sequence_data_path, 'rb') as f:
+    b2_sequence = pickle.load(f)
+b1_num, b2_num = 0, 0
+
+map_control_b1 = b_database[b1_sequence[b1_num]]
+map_control_b2 = b_database[b2_sequence[b2_num]]
 
 # target
 with open(target_data_path, 'rb') as f:
     target_database = pickle.load(f)
-map_target = target_database[0]
+target_num = 0
+map_target = target_database[target_num]
 
 # background layer
 map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
@@ -128,8 +135,8 @@ def rotate_clockwise(array):
 def rotate_counterclockwise(array):
     return [list(row) for row in reversed(list(zip(*array)))]
 
+# check control_b attach b1 or b2
 def check_b_possible(current_map, shape_position):
-    # check control_b attach b1 or b2
     devide = (current_map[max(0, shape_position[1] - 1)][shape_position[0]] + 
                 current_map[shape_position[1]][max(0, shape_position[0] - 1)] + 
                 current_map[min(HEIGHT_B - 1, shape_position[1] + 1)][shape_position[0]] + 
@@ -140,6 +147,7 @@ def check_b_possible(current_map, shape_position):
     else:
         return True
 
+# if the target row is full, remove
 def remove_line(current_map, score):
     for y in range(HEIGHT_TARGET):
         if sum(current_map[y]) == WIDTH_TARGET:
@@ -149,7 +157,8 @@ def remove_line(current_map, score):
         
     return current_map, score
 
-def check_game_over(current_map):
+# if block over 9 line, game over
+def check_trial_over(current_map):
     if sum(current_map[HEIGHT_TARGET-10]) > 0:
         return True
     else:
@@ -158,139 +167,157 @@ def check_game_over(current_map):
 clock = pygame.time.Clock()
 game_over = False
 score = 0
-map_target, _ = remove_line(map_target, score)
+trial = 1
 
 # Game Loof
 while not game_over:
-    stage_end = False
-    phase = 0
-    shape_position = [[0,2], [2,0], [15,0]]
-    map_control_b1 = b_database[b1_num]
-    map_control_b2 = b_database[b2_num]
+    trial_over = False
+    map_target = target_database[target_num]
+    map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
 
-    while not stage_end:
-        move = 0
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    game_over, stage_end = True, True
-                elif event.key == pygame.K_r:
-                    stage_end = True
-                elif event.key == pygame.K_LEFT:
-                    move = 1
-                elif event.key == pygame.K_RIGHT:
-                    move = 2
-                elif event.key == pygame.K_DOWN:
-                    move = 3
-                elif event.key == pygame.K_UP:
-                    move = 4
-                elif event.key == pygame.K_SPACE:
-                    move = 5
+    while not trial_over:
+        # trial initiate
+        stage_end = False
+        phase = 1
+        shape_position = [[0,2], [2,0], [15,0]]
+        map_control_b1 = b_database[b1_sequence[b1_num]]
+        map_control_b2 = b_database[b2_sequence[b2_num]]
 
-        # phase 0
-        if phase == 0:
-            if move == 3:   # down
-                shape_position[0], _ = move_shape(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A, 0, 1)
-            elif move == 4: # up
-                shape_position[0], _ = move_shape(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A, 0, -1)
-            elif move == 5: # space
-                shape_position[1][0] = shape_position[0][1]
-                phase = 1
-        
-        # phase 1
-        if phase == 1:
-            if move == 1:   # left
-                rotated_map = rotate_counterclockwise(map_control_b1)
+        while not stage_end:
+            # keybord input
+            move = 0
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    trial_over = True
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        game_over, trial_over, stage_end = True, True, True
+                    elif event.key == pygame.K_r:
+                        stage_end = True
+                    elif event.key == pygame.K_LEFT:
+                        move = 1
+                    elif event.key == pygame.K_RIGHT:
+                        move = 2
+                    elif event.key == pygame.K_DOWN:
+                        move = 3
+                    elif event.key == pygame.K_UP:
+                        move = 4
+                    elif event.key == pygame.K_SPACE:
+                        move = 5
 
-                if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
-                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
-                    stage_end = True
-                else:
-                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
+            # phase 1
+            if phase == 1:
+                if move == 3:   # move down
+                    shape_position[0], _ = move_shape(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A, 0, 1)
+                elif move == 4: # move up
+                    shape_position[0], _ = move_shape(shape_control_a, shape_position[0], map_control_a, WIDTH_A, HEIGHT_A, 0, -1)
+                elif move == 5: # choose
+                    shape_position[1][0] = shape_position[0][1]
                     phase = 2
-                    b1_num += 1
+            
+            # phase 2
+            if phase == 2:
+                if move == 1:   # choose left
+                    rotated_map = rotate_counterclockwise(map_control_b1)
 
-                map_control_b1 = rotate_clockwise(rotated_map)
-                shape_combine = map_control_b1
+                    # check option b is possible
+                    # im impossible : go to phase 1
+                    if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
+                        rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
+                        stage_end = True
+                    else:
+                        rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
+                        phase = 3
+                        b1_num += 1
+
+                    map_control_b1 = rotate_clockwise(rotated_map)
+                    # shape_combime = control a + control b
+                    shape_combine = map_control_b1
+                    
+                elif move == 2: # choose right
+                    shape_position[1][0] = 4 - shape_position[1][0]
+                    rotated_map = rotate_clockwise(map_control_b2)
+
+                    # check option b is possible
+                    # im impossible : go to phase 1
+                    if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
+                        rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
+                        stage_end = True
+                    else:
+                        rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
+                        phase = 3
+                        b2_num += 1
+
+                    map_control_b2 = rotate_counterclockwise(rotated_map)
+                    # shape_combine = control a + control b
+                    shape_combine = map_control_b2
+
+            # phase 3
+            if phase == 3:
+                if move == 1:   # move left
+                    shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, -1, 0)
+                elif move == 2: # move right
+                    shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, 1, 0)
+                elif move == 5: # choose
+                    shape_position[2] = hard_drop(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET)
+                    stage_end = True
+
+                # add shape_combine to target
+                for y, row in enumerate(shape_combine):
+                    for x, value in enumerate(row):
+                        if value:
+                            map_target[y + shape_position[2][1]][x + shape_position[2][0]] = shape_combine[y][x]
                 
-            elif move == 2: # right
-                shape_position[1][0] = 4 - shape_position[1][0]
-                rotated_map = rotate_clockwise(map_control_b2)
+                # remove line, check game over
+                map_target, score = remove_line(map_target,score)
+                trial_over = check_trial_over(map_target)
+                
 
-                if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
-                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
-                    stage_end = True
-                else:
-                    rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
-                    phase = 2
-                    b2_num += 1
+            ### visualization
+            ## fill all layer into background map (0 : WHITE, 1 : BLACK, 2 : GRAY, 3 : RED)
+            # control a
+            for y in range(HEIGHT_A):
+                map_background[y + 3][17] = 2
+            map_background[shape_position[0][1] + 3][17] = 1
 
-                map_control_b2 = rotate_counterclockwise(rotated_map)
-                shape_combine = map_control_b2
+            # control b
+            for y in range(HEIGHT_B):
+                for x in range(WIDTH_B):
+                    map_background[y + 3][x + 8] = 2 - map_control_b1[y][x]
 
-        # phase 2
-        if phase == 2:
-            if move == 1:   # left
-                shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, -1, 0)
-            elif move == 2: # right
-                shape_position[2], _ = move_shape(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET, 1, 0)
-            elif move == 5: #space
-                shape_position[2] = hard_drop(shape_combine, shape_position[2], map_target, WIDTH_TARGET, HEIGHT_TARGET)
-                stage_end = True
+                    map_background[y + 3][x + 22] = 2 - map_control_b2[y][x]
+            
+            # target
+            for y in range(HEIGHT_TARGET):
+                for x in range(WIDTH_TARGET):
+                    map_background[y + 8][x] = map_target[y][x]
 
-            for y, row in enumerate(shape_combine):
+            ## render
+            # initiate background white
+            WIN.fill(WHITE)
+
+            # 0 : WHITE, 1 : BLACK, 2 : GRAY
+            for y, row in enumerate(map_background):
                 for x, value in enumerate(row):
-                    if value:
-                        map_target[y + shape_position[2][1]][x + shape_position[2][0]] = shape_combine[y][x]
+                    if value == 1:
+                        pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                    elif value == 2:
+                        pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
+                    elif value == -1:
+                        pygame.draw.rect(WIN, RED, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
             
-            map_target, score = remove_line(map_target,score)
-            game_over = check_game_over(map_target)
-            
-            
+            # show phase
+            font = pygame.font.Font(None, 36)
+            text = font.render(f'phase : {phase}', True, BLACK)
+            text_rect = text.get_rect()
+            text_rect.bottomleft = (10, WIN.get_height() - 10)
+            WIN.blit(text, text_rect)
 
-        ### visualization
-        ## fill all layer into background map (0 : WHITE, 1 : BLACK, 2 : GRAY)
-        # control a
-        for y in range(HEIGHT_A):
-            map_background[y + 3][17] = 2
-        map_background[shape_position[0][1] + 3][17] = 1
+            # screen update
+            pygame.display.update()
 
-        # control b
-        for y in range(HEIGHT_B):
-            for x in range(WIDTH_B):
-                map_background[y + 3][x + 8] = 2 - map_control_b1[y][x]
-
-                map_background[y + 3][x + 22] = 2 - map_control_b2[y][x]
-        # target
-        for y in range(HEIGHT_TARGET):
-            for x in range(WIDTH_TARGET):
-                map_background[y + 8][x] = map_target[y][x]
-
-        ## render
-        # initiate background white
-        WIN.fill(WHITE)
-
-        # 0 : WHITE, 1 : BLACK, 2 : GRAY
-        for y, row in enumerate(map_background):
-            for x, value in enumerate(row):
-                if value == 1:
-                    pygame.draw.rect(WIN, BLACK, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
-                elif value == 2:
-                    pygame.draw.rect(WIN, GRAY, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
-                elif value == -1:
-                    pygame.draw.rect(WIN, RED, ((x + 0.1) * BLOCK_SIZE, (y + 0.1) * BLOCK_SIZE, BLOCK_SIZE * 0.9, BLOCK_SIZE * 0.9))
-        
-        # show phase
-        font = pygame.font.Font(None, 36)
-        text = font.render(f'phase : {phase}', True, BLACK)
-        text_rect = text.get_rect()
-        text_rect.bottomleft = (10, WIN.get_height() - 10)
-        WIN.blit(text, text_rect)
-
-        # screen update
-        pygame.display.update()
-
-        # FPS
-        clock.tick(10)
+            # FPS
+            clock.tick(10)
+    
+    trial += 1
+    target_num += 1
