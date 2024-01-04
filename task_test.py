@@ -4,7 +4,7 @@ control_b1 = 5x5 (왼)
 control_b2 = 5x5 (오)
 next_control_b1 = 3x3
 next_control_b2 = 3x3
-target = 14x35, 시작은 하단 6x35 에서만, 9줄을 넘어가면 game over
+target = 14x20, 시작은 하단 6x20 에서만, 9줄을 넘어가면 game over
 
 배경은 흰색, control 배경은 회색, 블록은 검은색, 블록 사이즈를 그리드보다 살짝 작게해서 흰색 배경으로 구분되게
 control_a의 위치는 (17,3)) 부터 (17,7)
@@ -12,7 +12,7 @@ control_b1의 위치는 (8,3) 부터 (12,7))
 control_b2의 위치는 (22,3) 부터 (26,7)
 next_control_b1의 위치는 (4,4) 부터 (7,7)
 next_control_b2의 위치는 (28,4)부터 (33,7)
-target의 위치는 (0,8) 부터 (34,22)까지
+target의 위치는 (8,8) 부터 (27,22)까지
 
 1. control_a에서 1x1 control block 위치 선택
 2. 1x1 control block 좌, 우 선택
@@ -26,6 +26,10 @@ import pygame
 import sys
 import pickle
 import os
+from datetime import datetime
+from InitData.Block_Shape_345DB import b_database
+from InitData.b_sequence import b1_sequence, b2_sequence
+from InitData.Target_Shape_20 import target_database
 
 # add path
 task_dir = os.path.dirname(os.path.abspath(__file__))
@@ -33,6 +37,10 @@ block_data_path = os.path.join(task_dir, 'InitData', 'Block_Shape_data.pkl')
 b1_sequence_data_path = os.path.join(task_dir, 'InitData', 'b1_sequence.pkl')
 b2_sequence_data_path = os.path.join(task_dir, 'InitData', 'b2_sequence.pkl')
 target_data_path = os.path.join(task_dir, 'InitData', 'Target_Shape_data.pkl')
+
+current_datetime = datetime.now()
+log_folder = current_datetime.strftime('%Y_%m_%d_%H_%M_%S')
+os.makedirs(os.path.join('Log', log_folder), exist_ok=True)
 
 # initiate
 pygame.init()
@@ -43,7 +51,7 @@ BLOCK_SIZE = 40
 WIDTH_GAME, HEIGHT_GAME = 35, 22
 WIDTH_A, HEIGHT_A = 1, 5
 WIDTH_B, HEIGHT_B = 5, 5
-WIDTH_TARGET, HEIGHT_TARGET = 35, 14
+WIDTH_TARGET, HEIGHT_TARGET = 20, 14
 WIN = pygame.display.set_mode((WIDTH_SCREEN, HEIGHT_SCREEN))
 pygame.display.set_caption("Tetris-like 게임")
 
@@ -76,22 +84,17 @@ shape_control_b = [
     [1]
 ]
 
-with open(block_data_path,'rb') as f:
-    b_database = pickle.load(f)
-with open(b1_sequence_data_path, 'rb') as f:
-    b1_sequence = pickle.load(f)
-with open(b2_sequence_data_path, 'rb') as f:
-    b2_sequence = pickle.load(f)
 b1_num, b2_num = 0, 0
 
 map_control_b1 = b_database[b1_sequence[b1_num]]
 map_control_b2 = b_database[b2_sequence[b2_num]]
 
 # target
-with open(target_data_path, 'rb') as f:
-    target_database = pickle.load(f)
-target_num = 0
-map_target = target_database[target_num]
+for target, values in target_database.items():
+    for _ in range(8):
+        values.insert(0, [0] * 20)
+target_num = 1
+map_target = target_database[f'Target {target_num}']
 
 # background layer
 map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
@@ -168,15 +171,32 @@ def check_trial_over(current_map):
     else:
         return False
 
+def save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_control_b2, shape_position, map_target, trial, phase, move):
+    current_time = pygame.time.get_ticks() - game_start_time
+    file_name = f'trial_{trial}.txt'
+    file_path = os.path.join('Log', log_folder, file_name)
+    with open(file_path, 'a') as file:
+        file.write(f"Time : {current_time}\n")
+        file.write(f"Control b1 : {map_control_b1}\n")
+        file.write(f"Control b2 : {map_control_b2}\n")
+        file.write(f"Control b1 next : {next_map_control_b1}\n")
+        file.write(f"Control b2 next : {next_map_control_b2}\n")
+        file.write(f"Shape position : {shape_position}\n")
+        file.write(f"Target : {map_target}\n")
+        file.write(f"Phase : {phase}\n")
+        file.write(f"Move : {move}\n")
+
 clock = pygame.time.Clock()
 game_over = False
 score = 0
 trial = 1
 
+game_start_time = pygame.time.get_ticks()
+
 # Game Loof
 while not game_over:
     trial_over = False
-    map_target = target_database[target_num]
+    map_target = target_database[f'Target {target_num}']
     map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
 
     while not trial_over:
@@ -184,7 +204,7 @@ while not game_over:
         stage_end = False
         error_b = False
         phase = 1
-        shape_position = [[0,2], [2,0], [15,0]]
+        shape_position = [[0,2], [2,0], [7,0]]
         map_control_b1 = b_database[b1_sequence[b1_num]]
         next_map_control_b1 = b_database[b1_sequence[b1_num + 1]]
         map_control_b2 = b_database[b2_sequence[b2_num]]
@@ -211,6 +231,7 @@ while not game_over:
                         move = 4
                     elif event.key == pygame.K_SPACE:
                         move = 5
+                    save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_control_b2, shape_position, map_target, trial, phase, move)
 
             # phase 1
             if phase == 1:
@@ -299,7 +320,7 @@ while not game_over:
             # target
             for y in range(HEIGHT_TARGET):
                 for x in range(WIDTH_TARGET):
-                    map_background[y + 8][x] = map_target[y][x]
+                    map_background[y + 8][x + 8] = map_target[y][x]
 
             ## render
             # initiate background white
