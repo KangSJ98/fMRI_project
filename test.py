@@ -186,53 +186,53 @@ def save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_contr
         file.write(f"Phase : {phase}\n")
         file.write(f"Move : {move}\n")
 
-def count_orphan_hole(current_map, option):
-    # option 1 : left, 2 : right
-
-    result_database = {}
+def option_score_left(target):
+    target_copy = [row[:] for row in target]
+    orphan_result_databases = {}
     for shape_name, matrix in b_database.items():
+        shape_position = [[0,2], [0,0], [0,0]] # a(0,0~4), a(0~4,0), b(0~width, 0)
         min_hole = float('inf')
 
-        if option - 1:
-            rotated_map = rotate_counterclockwise(matrix)
-        else:
-            rotated_map = rotate_clockwise(matrix)
-        
-        # 모든 option a에 대해
         for i in range(5):
-            if rotated_map[0][i] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, [i,0], rotated_map, WIDTH_B, HEIGHT_B)):
+            rotated_matrix = rotate_counterclockwise(matrix)
+            shape_position[1][0] = i
+            if rotated_matrix[0][shape_position[1][0]] == 1 or check_b_possible(rotated_matrix, hard_drop(shape_control_b, shape_position[1], rotated_matrix, WIDTH_B, HEIGHT_B)):
                 continue
             else:
-                rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
-
-            if option -1:
-                shape_combine = rotate_clockwise(rotated_map)
-            else:
-                shape_combine = rotate_counterclockwise(rotated_map)
+                rotated_matrix[shape_position[1][1]][shape_position[1][0]] = 1
             
-            # 모든 option 가능한 x좌표에 대해
-            for j in range(WIDTH_TARGET-5):
-                hole = 0
-                position = hard_drop(shape_combine, [j,0],current_map, WIDTH_TARGET, HEIGHT_TARGET)
-                for y, row in enumerate(shape_combine):
-                    for x, value in enumerate(row):
-                        if value:
-                            if x + position[0] > WIDTH_TARGET:
-                                hole = float('inf')
-                                break
-                            current_map[y + position[1]][x + position[0]] = shape_combine[y][x] + 1
-                
-                for y, row in enumerate(current_map):
-                    for x, value in enumerate(row):
-                        if not value:
-                            for k in range(y):
-                                if current_map[k][x] == 2:
-                                    hole += 1
+            combine_matrix = rotate_clockwise(rotated_matrix)
+            left = hard_drop(rotate_counterclockwise(combine_matrix), shape_position[2], rotate_counterclockwise(target_copy), HEIGHT_TARGET, WIDTH_TARGET)
+            right = hard_drop(rotate_clockwise(combine_matrix), shape_position[2], rotate_clockwise(target_copy), HEIGHT_TARGET, WIDTH_TARGET)
+            
+            for j in range(WIDTH_TARGET - left[1], right[1]):
+                shape_position[2] = hard_drop(combine_matrix, [j,0], target_copy, WIDTH_TARGET, HEIGHT_TARGET)
+                hole = count_orphan_hole(target_copy, combine_matrix, shape_position[2])
                 if hole < min_hole:
                     min_hole = hole
-        result_database[shape_name] = min_hole
-    
-    return result_database
+        orphan_result_databases[shape_name] = min_hole
+    return orphan_result_databases
+
+def count_orphan_hole(target, combine_matrix, shape_position):
+    target_copy = [row[:] for row in target]
+    for y, row in enumerate(combine_matrix):
+        for x, value in enumerate(row):
+            if value:
+                target_copy[shape_position[1] + y][shape_position[0] + x] = 2
+
+    hole = 0
+    for y, row in enumerate(target_copy):
+        for x, value in enumerate(row):
+            if value == 0:
+                for i in range(y):
+                    if target_copy[i][x] == 2:
+                        hole += 1
+                        break
+
+    return hole
+
+def count_flat(target, combine_matrix, shape_position)
+
 
     
 
@@ -353,7 +353,7 @@ while not game_over:
                 map_target, score = remove_line(map_target,score)
                 trial_over = check_trial_over(map_target)
                 if move == 5:
-                    orphan_data = count_orphan_hole(map_target, choice)
+                    orphan_data = option_score_left(map_target)
                     for shape_name, value in orphan_data.items():
                         print(f"{shape_name} 결과 : {value}")
 
@@ -427,7 +427,7 @@ while not game_over:
             pygame.display.update()
 
             # FPS
-            clock.tick(10)
+            clock.tick(60)
     
     trial += 1
     target_num += 1
