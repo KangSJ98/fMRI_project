@@ -26,17 +26,14 @@ import pygame
 import sys
 import pickle
 import os
+import numpy as np
 from datetime import datetime
 from InitData.Block_Shape_345DB import b_database
 from InitData.b_sequence import b1_sequence, b2_sequence
 from InitData.Target_Shape_20 import target_database
+from utils import *
+from option_score import *
 
-# add path
-task_dir = os.path.dirname(os.path.abspath(__file__))
-block_data_path = os.path.join(task_dir, 'InitData', 'Block_Shape_data.pkl')
-b1_sequence_data_path = os.path.join(task_dir, 'InitData', 'b1_sequence.pkl')
-b2_sequence_data_path = os.path.join(task_dir, 'InitData', 'b2_sequence.pkl')
-target_data_path = os.path.join(task_dir, 'InitData', 'Target_Shape_data.pkl')
 
 current_datetime = datetime.now()
 log_folder = current_datetime.strftime('%Y_%m_%d_%H_%M_%S')
@@ -99,77 +96,12 @@ map_target = target_database[f'Target {target_num}']
 # background layer
 map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
 
-### function def
-def clear_previous_position(current_shape, shape_position, current_map, map_widgh, map_height):
-    for y, row in enumerate(current_shape):
-        for x, value in enumerate(row):
-            if value:
-                if 0<= shape_position[0] + x < map_widgh and 0<= shape_position[1] + y < map_height:
-                    current_map[shape_position[1] + y][shape_position[0] + x] = 0
-    
-    return current_map
+clock = pygame.time.Clock()
+game_over = False
+score = 0
+trial = 1
 
-def move_shape(current_shape, shape_position, current_map, map_width, map_height, dx, dy):
-    clear_previous_position(current_shape, shape_position, current_map, map_width, map_height)
-    can_move = True
-    for y, row in enumerate(current_shape):
-        for x, value in enumerate(row):
-            if value:
-                new_x, new_y = shape_position[0] + dx + x, shape_position[1] + dy + y
-                if(
-                    (new_x < 0 or map_width <= new_x)
-                    or (new_y < 0 or map_height <= new_y)
-                    or current_map[new_y][new_x] == 1
-                ):
-                    can_move = False
-                    break
-    
-    if can_move:
-        shape_position[0] += dx
-        shape_position[1] += dy
-    
-    return shape_position, can_move
-
-def hard_drop(current_shape, shape_position, current_map, map_width, map_height):
-    can_move = True
-    while can_move:
-        shape_position, can_move = move_shape(current_shape, shape_position, current_map, map_width, map_height, 0, 1)
-    return shape_position
-
-def rotate_clockwise(array):
-    return [list(row) for row in zip(*reversed(array))]
-
-def rotate_counterclockwise(array):
-    return [list(row) for row in reversed(list(zip(*array)))]
-
-# check control_b attach b1 or b2
-def check_b_possible(current_map, shape_position):
-    devide = (current_map[max(0, shape_position[1] - 1)][shape_position[0]] + 
-                current_map[shape_position[1]][max(0, shape_position[0] - 1)] + 
-                current_map[min(HEIGHT_B - 1, shape_position[1] + 1)][shape_position[0]] + 
-                current_map[shape_position[1]][min(WIDTH_B - 1, shape_position[0] + 1)]
-    )
-    if devide:
-        return False
-    else:
-        return True
-
-# if the target row is full, remove
-def remove_line(current_map, score):
-    for y in range(HEIGHT_TARGET):
-        if sum(current_map[y]) == WIDTH_TARGET:
-            del current_map[y]
-            current_map.insert(0, [0] * WIDTH_TARGET)
-            score += LINE_SCORE
-        
-    return current_map, score
-
-# if block over 9 line, game over
-def check_trial_over(current_map):
-    if sum(current_map[HEIGHT_TARGET-10]) > 0:
-        return True
-    else:
-        return False
+game_start_time = pygame.time.get_ticks()
 
 def save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_control_b2, shape_position, map_target, trial, phase, move):
     current_time = pygame.time.get_ticks() - game_start_time
@@ -185,13 +117,6 @@ def save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_contr
         file.write(f"Target : {map_target}\n")
         file.write(f"Phase : {phase}\n")
         file.write(f"Move : {move}\n")
-
-clock = pygame.time.Clock()
-game_over = False
-score = 0
-trial = 1
-
-game_start_time = pygame.time.get_ticks()
 
 # Game Loof
 while not game_over:
@@ -250,7 +175,8 @@ while not game_over:
 
                     # check option b is possible
                     # if impossible : go to phase 1
-                    if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
+                    shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
+                    if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, shape_position[1]):
                         rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
                         stage_end = True
                         error_b = True
@@ -269,7 +195,8 @@ while not game_over:
 
                     # check option b is possible
                     # if impossible : go to phase 1
-                    if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)):
+                    shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
+                    if rotated_map[0][shape_position[1][0]] == 1 or check_b_possible(rotated_map, shape_position[1]):
                         rotated_map[shape_position[1][1]][shape_position[1][0]] = 3
                         stage_end = True
                         error_b = True
@@ -281,6 +208,7 @@ while not game_over:
                     map_control_b2 = rotate_counterclockwise(rotated_map)
                     # shape_combine = control a + control b
                     shape_combine = map_control_b2
+                choice = move
 
             # phase 3
             if phase == 3:
@@ -301,7 +229,12 @@ while not game_over:
                 # remove line, check game over
                 map_target, score = remove_line(map_target,score)
                 trial_over = check_trial_over(map_target)
-                
+                if move == 5:
+                    orphan_data, flat_data = option_score_left(map_target)
+                    for shape_name, value in orphan_data.items():
+                        print(f"{shape_name} 결과 : {value}")
+                    for shape_name, value in flat_data.items():
+                        print(f"{shape_name} 결과 : {value}")
 
             ### visualization
             ## fill all layer into background map (0 : WHITE, 1 : BLACK, 2 : GRAY, 3 : RED)
@@ -373,7 +306,7 @@ while not game_over:
             pygame.display.update()
 
             # FPS
-            clock.tick(10)
+            clock.tick(60)
     
     trial += 1
     target_num += 1
