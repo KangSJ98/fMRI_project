@@ -6,6 +6,7 @@ WIDTH_A, HEIGHT_A = 1, 5
 WIDTH_B, HEIGHT_B = 5, 5
 WIDTH_TARGET, HEIGHT_TARGET = 20, 14
 
+
 # add path
 task_dir = os.path.dirname(os.path.abspath(__file__))
 block_data_path = os.path.join(task_dir, 'InitData', 'Block_Shape_data.pkl')
