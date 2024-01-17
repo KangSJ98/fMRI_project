@@ -31,13 +31,9 @@ from datetime import datetime
 from InitData.Block_Shape_345DB import b_database
 from InitData.b_sequence import b1_sequence, b2_sequence
 from InitData.Target_Shape_20 import target_database
+from utils import *
+from option_score import *
 
-# add path
-task_dir = os.path.dirname(os.path.abspath(__file__))
-block_data_path = os.path.join(task_dir, 'InitData', 'Block_Shape_data.pkl')
-b1_sequence_data_path = os.path.join(task_dir, 'InitData', 'b1_sequence.pkl')
-b2_sequence_data_path = os.path.join(task_dir, 'InitData', 'b2_sequence.pkl')
-target_data_path = os.path.join(task_dir, 'InitData', 'Target_Shape_data.pkl')
 
 current_datetime = datetime.now()
 log_folder = current_datetime.strftime('%Y_%m_%d_%H_%M_%S')
@@ -47,12 +43,6 @@ os.makedirs(os.path.join('Log', log_folder), exist_ok=True)
 pygame.init()
 
 # screen setting
-WIDTH_SCREEN, HEIGHT_SCREEN = 1404, 920
-BLOCK_SIZE = 40
-WIDTH_GAME, HEIGHT_GAME = 35, 22
-WIDTH_A, HEIGHT_A = 1, 5
-WIDTH_B, HEIGHT_B = 5, 5
-WIDTH_TARGET, HEIGHT_TARGET = 20, 14
 WIN = pygame.display.set_mode((WIDTH_SCREEN, HEIGHT_SCREEN))
 pygame.display.set_caption("Tetris-like 게임")
 
@@ -66,7 +56,6 @@ BLUE = (0, 0, 255)
 
 # parameter
 LINE_SCORE = 1
-
 
 # control_a
 shape_control_a = [
@@ -100,78 +89,12 @@ map_target = target_database[f'Target {target_num}']
 # background layer
 map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
 
-### function def
-def clear_previous_position(current_shape, shape_position, current_map, map_widgh, map_height):
-    for y, row in enumerate(current_shape):
-        for x, value in enumerate(row):
-            if value:
-                if 0<= shape_position[0] + x < map_widgh and 0<= shape_position[1] + y < map_height:
-                    current_map[shape_position[1] + y][shape_position[0] + x] = 0
-    
-    return current_map
+clock = pygame.time.Clock()
+game_over = False
+score = 0
+trial = 1
 
-def move_shape(current_shape, shape_position, current_map, map_width, map_height, dx, dy):
-    clear_previous_position(current_shape, shape_position, current_map, map_width, map_height)
-    can_move = True
-    for y, row in enumerate(current_shape):
-        for x, value in enumerate(row):
-            if value:
-                new_x, new_y = shape_position[0] + dx + x, shape_position[1] + dy + y
-                if(
-                    (new_x < 0 or map_width <= new_x)
-                    or (new_y < 0 or map_height <= new_y)
-                    or current_map[new_y][new_x] == 1
-                ):
-                    can_move = False
-                    break
-    
-    if can_move:
-        shape_position[0] += dx
-        shape_position[1] += dy
-    
-    return shape_position, can_move
-
-def hard_drop(current_shape, shape_position, current_map, map_width, map_height):
-    position_copy = shape_position
-    can_move = True
-    while can_move:
-        position_copy, can_move = move_shape(current_shape, position_copy, current_map, map_width, map_height, 0, 1)
-    return position_copy
-
-def rotate_clockwise(array):
-    return [list(row) for row in zip(*reversed(array))]
-
-def rotate_counterclockwise(array):
-    return [list(row) for row in reversed(list(zip(*array)))]
-
-# check control_b attach b1 or b2
-def check_b_possible(current_map, shape_position):
-    devide = (current_map[max(0, shape_position[1] - 1)][shape_position[0]] + 
-                current_map[shape_position[1]][max(0, shape_position[0] - 1)] + 
-                current_map[min(HEIGHT_B - 1, shape_position[1] + 1)][shape_position[0]] + 
-                current_map[shape_position[1]][min(WIDTH_B - 1, shape_position[0] + 1)]
-    )
-    if devide:
-        return False
-    else:
-        return True
-
-# if the target row is full, remove
-def remove_line(current_map, score):
-    for y in range(HEIGHT_TARGET):
-        if sum(current_map[y]) == WIDTH_TARGET:
-            del current_map[y]
-            current_map.insert(0, [0] * WIDTH_TARGET)
-            score += LINE_SCORE
-        
-    return current_map, score
-
-# if block over 9 line, game over
-def check_trial_over(current_map):
-    if sum(current_map[HEIGHT_TARGET-10]) > 0:
-        return True
-    else:
-        return False
+game_start_time = pygame.time.get_ticks()
 
 def save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_control_b2, shape_position, map_target, trial, phase, move):
     current_time = pygame.time.get_ticks() - game_start_time
@@ -187,82 +110,6 @@ def save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_contr
         file.write(f"Target : {map_target}\n")
         file.write(f"Phase : {phase}\n")
         file.write(f"Move : {move}\n")
-
-def option_score_left(target):
-    target_copy = [row[:] for row in target]
-    orphan_result_databases = {}
-    flatness_result_databases = {}
-    for shape_name, matrix in b_database.items():
-        shape_position = [[0,2], [0,0], [0,0]] # a(0,0~4), a(0~4,0), b(0~width, 0)
-        min_hole = float('inf')
-        min_flat = float('inf')
-
-        for i in range(5):
-            rotated_matrix = rotate_counterclockwise(matrix)
-            shape_position[1] = [i,0]
-            shape_position[2] = [0,0]
-            if rotated_matrix[0][shape_position[1][0]] == 1 or check_b_possible(rotated_matrix, hard_drop(shape_control_b, shape_position[1], rotated_matrix, WIDTH_B, HEIGHT_B)):
-                continue
-            else:
-                rotated_matrix[shape_position[1][1]][shape_position[1][0]] = 1
-                
-            combine_matrix = rotate_clockwise(rotated_matrix)
-            left = hard_drop(rotate_counterclockwise(combine_matrix), shape_position[2], rotate_counterclockwise(target_copy), HEIGHT_TARGET, WIDTH_TARGET)
-            right = hard_drop(rotate_clockwise(combine_matrix), [HEIGHT_TARGET-HEIGHT_B,0], rotate_clockwise(target_copy), HEIGHT_TARGET, WIDTH_TARGET)
-            for j in range(WIDTH_TARGET - left[1] - WIDTH_B, right[1]):
-                shape_position[2] = hard_drop(combine_matrix, [j,0], target_copy, WIDTH_TARGET, HEIGHT_TARGET)
-                hole = count_orphan_hole(target_copy, combine_matrix, shape_position[2])
-                flatness = measure_flatness_std(target_copy, combine_matrix, shape_position[2])
-                if hole < min_hole:
-                    min_hole = hole
-                if flatness < min_flat:
-                    min_flat = flatness
-        orphan_result_databases[shape_name] = min_hole
-        flatness_result_databases[shape_name] = min_flat
-    return orphan_result_databases, flatness_result_databases
-
-def count_orphan_hole(target, combine_matrix, shape_position):
-    target_copy = [row[:] for row in target]
-    for y, row in enumerate(combine_matrix):
-        for x, value in enumerate(row):
-            if value:
-                target_copy[shape_position[1] + y][shape_position[0] + x] = 2
-
-    hole = 0
-    for y, row in enumerate(target_copy):
-        for x, value in enumerate(row):
-            if value == 0:
-                for i in range(y,0,-1):
-                    if target_copy[i][x] == 2:
-                        hole += 1
-                        break
-                    elif target_copy[i][x] == 1:
-                        break
-
-    return hole
-
-def measure_flatness_std(target, combine_matrix, shape_position):
-    target_copy = [row[:] for row in target]
-    target_height = [sum(column) for column in zip(*target_copy)]
-    std_target = np.std(target_height)
-    
-    for y, row in enumerate(combine_matrix):
-        for x, value in enumerate(row):
-            if value:
-                target_copy[shape_position[1] + y][shape_position[0] + x] = 2
-    
-    combine_height = [sum(column) for column in zip(*target_copy)]
-    std_combine = np.std(combine_height)
-
-    return std_combine - std_target
-
-
-clock = pygame.time.Clock()
-game_over = False
-score = 0
-trial = 1
-
-game_start_time = pygame.time.get_ticks()
 
 # Game Loof
 while not game_over:
@@ -376,11 +223,22 @@ while not game_over:
                 map_target, score = remove_line(map_target,score)
                 trial_over = check_trial_over(map_target)
                 if move == 5:
-                    orphan_data, flat_data = option_score_left(map_target)
+                    score_time = pygame.time.get_ticks()
+                    orphan_data, flat_data, border_data = option_score_left(map_target)
+                    # for shape_name, value in orphan_data.items():
+                    #     print(f"{shape_name} 결과 : {value}")
+                    # for shape_name, value in flat_data.items():
+                    #     print(f"{shape_name} 결과 : {value}")
+                    # for shape_name, value in border_data.items():
+                    #     print(f'{shape_name} 결과 : {value}')
+
                     for shape_name, value in orphan_data.items():
-                        print(f"{shape_name} 결과 : {value}")
-                    for shape_name, value in flat_data.items():
-                        print(f"{shape_name} 결과 : {value}")
+                        orphan_value = orphan_data.get(shape_name, 'N/A')
+                        flat_value = flat_data.get(shape_name, 'N/A')
+                        border_value = border_data.get(shape_name,'N/A')
+                        print(f"{shape_name} 결과 : orphan : {orphan_value}, flat : {flat_value}, border : {border_value}")
+
+                    print(pygame.time.get_ticks() - score_time)
 
             ### visualization
             ## fill all layer into background map (0 : WHITE, 1 : BLACK, 2 : GRAY, 3 : RED)
