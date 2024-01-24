@@ -38,23 +38,21 @@ def move_shape(current_shape, shape_position, current_map, map_width, map_height
     
     return shape_position, can_move
 
-# if the target row is full, remove
 def remove_line(current_map, score):
     """
-    한 줄이 꽉 차면 지움
+    if the target row has no 0, remove
     """
     for y in range(HEIGHT_TARGET):
-        if sum(current_map[y]) == WIDTH_TARGET:
+        if all(cell != 0 for cell in current_map[y]):
             del current_map[y]
             current_map.insert(0, [0] * WIDTH_TARGET)
             score += 1
         
     return current_map, score
 
-# if block over 9 line, game over
 def check_trial_over(current_map):
     """
-    일정 높이 이상이면 게임오버
+    if block over 9 line, game over
     """
     if sum(current_map[HEIGHT_TARGET-10]) > 0:
         return True
