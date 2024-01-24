@@ -31,8 +31,8 @@ import random
 from datetime import datetime
 from InitData.b_234DB import *
 from InitData.Target_Shape_20 import target_database
-from utils import *
-from option_score import *
+from Utils.utils import *
+from Utils.option_score import *
 
 current_datetime = datetime.now()
 log_folder = current_datetime.strftime('%Y_%m_%d_%H_%M_%S')
