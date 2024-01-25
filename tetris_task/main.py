@@ -199,8 +199,6 @@ while not game_over:
                     map_control_b2 = rotate_counterclockwise(rotated_map)
                     # shape_combine = control a + control b
                     shape_combine = map_control_b2
-                    map_control_b2 = next_map_control_b2
-                    next_map_control_b2 = right_database[random.choice(list(right_database.keys()))]
                 phase2_choice = move - 1 # left : 0, right : 1
 
             # phase 3
