@@ -16,7 +16,15 @@ def clear_previous_position(current_shape, shape_position, current_map, map_widg
 
 def move_shape(current_shape, shape_position, current_map, map_width, map_height, dx, dy):
     """
-    도형을 dx, dy만큼 이동
+    input
+    current shape
+    shape position [x,y]
+    dx
+    dy
+
+    output
+    shape position [x + dx, y + dy]
+    can move (if can return ture)
     """
     clear_previous_position(current_shape, shape_position, current_map, map_width, map_height)
     can_move = True
@@ -40,7 +48,13 @@ def move_shape(current_shape, shape_position, current_map, map_width, map_height
 
 def remove_line(current_map, score):
     """
+    input
+    target
+
     if the target row has no 0, remove
+
+    output
+    target
     """
     for y in range(HEIGHT_TARGET):
         if all(cell != 0 for cell in current_map[y]):
@@ -52,7 +66,11 @@ def remove_line(current_map, score):
 
 def check_trial_over(current_map):
     """
-    if block over 9 line, game over
+    input
+    target
+
+    output
+    if block over 9 line return true
     """
     if sum(current_map[HEIGHT_TARGET-10]) > 0:
         return True
@@ -61,7 +79,13 @@ def check_trial_over(current_map):
 
 def hard_drop(current_shape, shape_position, current_map, map_width, map_height):
     """
-    current shape이 current map, position의 맨 아래까지 이동
+    input
+    current shape
+    shape position [x,y]
+    current map
+
+    output
+    hard drop position of current shape [x',y']
     """
     position_copy = shape_position
     can_move = True
@@ -71,27 +95,32 @@ def hard_drop(current_shape, shape_position, current_map, map_width, map_height)
 
 def rotate_clockwise(array):
     """
-    배열을 시계방향 회전
+    rotate array clockwise
     """
     return [list(row) for row in zip(*reversed(array))]
 
 def rotate_counterclockwise(array):
     """
-    배열을 반시계방향 회전
+    rotate array counter clockwise
     """
     return [list(row) for row in reversed(list(zip(*array)))]
 
 def flip_horizontally(array):
     """
-    배열 좌우반전
+    flip array horizontally
     """
     return [row[::-1] for row in array]
 
 # check control_b attach b1 or b2
 def check_b_possible(current_map, shape_position):
     """
-    phase 2에서 b가 만들어질 수 있는 도형인지 여부 판단하는 함수
-    불가능 : True, 가능 : False
+    input
+    option b
+    option a position [x,y]
+
+    return
+    a + b is devide?
+    if devide : true
     """
     devide = (current_map[max(0, shape_position[1] - 1)][shape_position[0]] + 
                 current_map[shape_position[1]][max(0, shape_position[0] - 1)] + 

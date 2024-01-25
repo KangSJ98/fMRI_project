@@ -9,11 +9,16 @@ shape_control_b = [
 
 def option_score(target, right):
     """
-    현재 target에 대해 모든 블록들의 점수를 반환
-    left : 0, right : 1
+    input
+    target array
+    left(0) or right(1)
 
-    1열 : 블록 이름
-    2열 ~ : 각 알고리즘에 해당하는 점수
+    output
+    result database array
+    colume 1 : shape name
+    colume 2 : orphan hole
+    colume 3 : flatness
+    colume 4 : border
     """
     target_copy = [row[:] for row in target]
     if right:
@@ -62,7 +67,13 @@ def option_score(target, right):
 
 def count_orphan_hole(target, combine_matrix, shape_position):
     """
-    orphan hole의 개수
+    input
+    target array
+    combine matrix : option a + option b
+    shape position : [j,0]
+
+    output
+    number of orphan hole
     """
     target_copy = [row[:] for row in target]
     for y, row in enumerate(combine_matrix):
@@ -85,8 +96,14 @@ def count_orphan_hole(target, combine_matrix, shape_position):
 
 def measure_flatness_std(target, combine_matrix, shape_position):
     """
-    도형을 넣은 뒤 평평도 - 넣기 전 평평도
-    (평평도 : 높이의 표준편차)
+    input
+    target array
+    combine matrix : option a + option b
+    shape position : [j,0]
+
+    output
+    flatness of (option b + target) - flatness of (target)
+    flatness : std of each colume
     """
     target_copy = [row[:] for row in target]
     target_height = [sum(column) for column in zip(*target_copy)]
@@ -104,8 +121,13 @@ def measure_flatness_std(target, combine_matrix, shape_position):
 
 def count_border(target, combine_matrix, shape_position):
     """
-    도형의 테두리가 target과 얼마나 많이 접하는지
-    접하는 테두리 수 / 전체 테두리 수
+    input
+    target array
+    combine matrix : option a + option b
+    shape position : [j,0]
+
+    output
+    접하는 테두리 수 / 전체 테두리 수 (0~1)
     """
     target_copy = [row[:] for row in target]
     total_count_1 = 0
@@ -127,6 +149,14 @@ def count_border(target, combine_matrix, shape_position):
     return border_target / border_combine
 
 def count_neighbors(target, row, col):
+    """
+    input
+    target
+    cell position(row, col)
+
+    output
+    number of 1 and 2 in the neighbor
+    """
     count_1 = 0
     count_2 = 0
 
@@ -143,13 +173,22 @@ def count_neighbors(target, row, col):
 
 def euclidean_distance(a, b):
     """
-    두 벡터 간의 유클리드 거리 계산
+    input
+    two vector
+
+    output
+    euclidean distance between two vectors
     """
     return np.sqrt(np.sum((np.array(a[1:]) - np.array(b[1:]))**2))
 
 def recommend_similar(current_shape_name, data):
     """
-    주어진 데이터에서 현재 도형에 대해 유클리드 거리가 작은 다른 도형을 반환
+    input
+    current shape name
+    option score data
+
+    output
+    name of the smallest euclidean distance to the current shape
     """
     target_left = next(item for item in data if item[0] == current_shape_name)
     distances = [(item[0], euclidean_distance(target_left, item)) for item in data]

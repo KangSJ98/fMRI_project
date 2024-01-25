@@ -97,6 +97,10 @@ trial = 1
 game_start_time = pygame.time.get_ticks()
 
 def save_log(map_control_b1, map_control_b2, next_map_control_b1, next_map_control_b2, shape_position, map_target, trial, phase, move):
+    """
+    save all log of game
+    /Log/trial_{trial}.txt
+    """
     current_time = pygame.time.get_ticks() - game_start_time
     file_name = f'trial_{trial}.txt'
     file_path = os.path.join('Log', log_folder, file_name)
@@ -124,8 +128,6 @@ while not game_over:
         phase = 1
         shape_position = [[0,2], [2,0], [7,0]]
         
-
-
         while not stage_end:
             # keybord input
             move = 0
