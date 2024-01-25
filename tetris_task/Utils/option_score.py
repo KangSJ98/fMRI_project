@@ -74,6 +74,7 @@ def count_orphan_hole(target, combine_matrix, shape_position):
 
     output
     number of orphan hole
+    0 is the best
     """
     target_copy = [row[:] for row in target]
     for y, row in enumerate(combine_matrix):
@@ -104,6 +105,7 @@ def measure_flatness_std(target, combine_matrix, shape_position):
     output
     flatness of (option b + target) - flatness of (target)
     flatness : std of each colume
+    lower is better
     """
     target_copy = [row[:] for row in target]
     target_height = [sum(column) for column in zip(*target_copy)]
@@ -127,7 +129,8 @@ def count_border(target, combine_matrix, shape_position):
     shape position : [j,0]
 
     output
-    접하는 테두리 수 / 전체 테두리 수 (0~1)
+    접하지 않는 테두리 수 / 전체 테두리 수 (0~1)
+    lower is better
     """
     target_copy = [row[:] for row in target]
     total_count_1 = 0
