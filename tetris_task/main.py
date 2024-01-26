@@ -223,8 +223,9 @@ while not game_over:
                 if move == 5:
                     score_time = pygame.time.get_ticks()
                     result_database = option_score(map_target, phase2_choice)
+                    b1_name = recommend_similar(b1_name, result_database)
                     map_control_b1 = next_map_control_b1
-                    next_map_control_b1 = left_database[random.choice(list(left_database.keys()))]
+                    next_map_control_b1 = left_database[b1_name]
 
                     # for shape_name, value in orphan_data.items():
                     #     orphan_value = orphan_data.get(shape_name, 'N/A')
