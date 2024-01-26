@@ -193,8 +193,8 @@ def recommend_similar(current_shape_name, data):
     output
     name of the smallest euclidean distance to the current shape
     """
-    target_left = next(item for item in data if item[0] == current_shape_name)
-    distances = [(item[0], euclidean_distance(target_left, item)) for item in data]
+    options = next(item for item in data if item[0] == current_shape_name)
+    distances = [(item[0], euclidean_distance(options, item)) for item in data]
     distances.sort(key=lambda x: x[1])  # 거리가 작은 순으로 정렬
 
     return distances[0][0]
