@@ -8,7 +8,7 @@ control_b2 = 4x4 (right)
 target = 10x7 (6x7(target) + 4x7(combine))
 (2,2) ~ (8,11)
 
-1. present purpose(0 : orphan hole, 1 : flatness) seperate by color
+1. present purpose(hole : orphan hole, flat : flatness) seperate by color
 2. choose the control a position
 3. choose control b1 or b2
     3-1. if the block is not complete, go to 1
@@ -75,7 +75,7 @@ while not game_over:
     trial_over = False
     error_b = False
     phase = 1
-    purpose = random.randint(0,1) # 1 : orphan hole, 2 : flatness
+    purpose = random.choice(['hole','flat'])
     print(purpose)
     shape_position = [[0,2],[0,0],[0,0]] # 0 : control_a, 1 : control_b, 2 : combine
 
@@ -85,7 +85,7 @@ while not game_over:
     # option scroe
     left_score, right_score = option_score(map_target)
     b1_name = random.choice(list(left_database.keys()))
-    b2_name = find_closest_shape(right_score, purpose, left_score[b1_name][2 * purpose])
+    b2_name = find_closest_shape(right_score, purpose, left_score[b1_name][purpose][0])
     map_control_b1 = left_database[b1_name]
     map_control_b2 = right_database[b2_name]
 
@@ -156,9 +156,9 @@ while not game_over:
         if phase == 3:
             # best position of current purpose
             if phase2_choice == 'left':
-                shape_position[2] = left_score[b1_name][purpose * 2 + 1]
+                shape_position[2] = left_score[b1_name][purpose][1]
             else:
-                shape_position[2] = right_score[b2_name][purpose * 2 + 1]
+                shape_position[2] = right_score[b2_name][purpose][1]
             print(f'shape position = {shape_position[2]}, shape_combine : {shape_combine}')
 
             # add shape_combine to target
