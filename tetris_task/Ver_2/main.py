@@ -76,6 +76,7 @@ while not game_over:
     error_b = False
     phase = 1
     purpose = random.randint(0,1) # 1 : orphan hole, 2 : flatness
+    print(purpose)
     shape_position = [[0,2],[0,0],[0,0]] # 0 : control_a, 1 : control_b, 2 : combine
 
     # target reset
@@ -136,6 +137,7 @@ while not game_over:
                 map_control_b1 = rotate_clockwise(rotated_map)
                 shape_combine = map_control_b1 # shape_combine = control_a + control_b
             elif move == 'right':
+                print(map_control_b2)
                 shape_position[1][0] = HEIGHT_B - shape_position[1][0] - 1
                 rotated_map = rotate_clockwise(map_control_b2)
                 shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
@@ -149,7 +151,7 @@ while not game_over:
                     phase = 3
 
                 map_control_b2 = rotate_counterclockwise(rotated_map)
-                shape_combine = map_control_b1 # shape_combine = control_a + control_b
+                shape_combine = map_control_b2 # shape_combine = control_a + control_b
         # phase 3
         if phase == 3:
             # best position of current purpose
@@ -157,6 +159,7 @@ while not game_over:
                 shape_position[2] = left_score[b1_name][purpose * 2 + 1]
             else:
                 shape_position[2] = right_score[b2_name][purpose * 2 + 1]
+            print(f'shape position = {shape_position[2]}, shape_combine : {shape_combine}')
 
             # add shape_combine to target
             for y, row in enumerate(shape_combine):
