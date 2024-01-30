@@ -8,7 +8,7 @@ control_b2 = 4x4 (right)
 target = 10x7 (6x7(target) + 4x7(combine))
 (2,2) ~ (8,11)
 
-1. present purpose(1 : orphan hole, 2 : flatness) seperate by color
+1. present purpose(0 : orphan hole, 1 : flatness) seperate by color
 2. choose the control a position
 3. choose control b1 or b2
     3-1. if the block is not complete, go to 1
@@ -17,8 +17,6 @@ target = 10x7 (6x7(target) + 4x7(combine))
 
 import pygame
 import os
-import numpy as np
-import random
 from datetime import datetime
 from InitData.b_234DB import *
 from InitData.Target_Shape_20 import target_database
@@ -77,15 +75,18 @@ while not game_over:
     trial_over = False
     error_b = False
     phase = 1
-    purpose = random.randint(1,2) # 1 : orphan hole, 2 : flatness
+    purpose = random.randint(0,1) # 1 : orphan hole, 2 : flatness
     shape_position = [[0,2],[0,0],[0,0]] # 0 : control_a, 1 : control_b, 2 : combine
 
-    # option_b, target reset
+    # target reset
+    map_target = target_database[f'Target {target_num}']
+
+    # option scroe
+    left_score, right_score = option_score(map_target)
     b1_name = random.choice(list(left_database.keys()))
-    b2_name = random.choice(list(right_database.keys()))
+    b2_name = find_closest_shape(right_score, purpose, left_score[b1_name][2 * purpose])
     map_control_b1 = left_database[b1_name]
     map_control_b2 = right_database[b2_name]
-    map_target = target_database[f'Target {target_num}']
 
     # background layer
     map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
@@ -118,7 +119,8 @@ while not game_over:
                 shape_position[1][0] = shape_position[0][1]
                 phase = 2
         # phase 2
-        elif phase == 2:
+        if phase == 2:
+            phase2_choice = move
             if move == 'left':
                 rotated_map = rotate_counterclockwise(map_control_b1)
                 shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
@@ -149,8 +151,12 @@ while not game_over:
                 map_control_b2 = rotate_counterclockwise(rotated_map)
                 shape_combine = map_control_b1 # shape_combine = control_a + control_b
         # phase 3
-        elif phase == 3:
-            # shape_position[2], _ = best_position
+        if phase == 3:
+            # best position of current purpose
+            if phase2_choice == 'left':
+                shape_position[2] = left_score[b1_name][purpose * 2 + 1]
+            else:
+                shape_position[2] = right_score[b2_name][purpose * 2 + 1]
 
             # add shape_combine to target
             for y, row in enumerate(shape_combine):
@@ -203,12 +209,12 @@ while not game_over:
         # screen update
         pygame.display.update()
         
-        # if trial end, delay 1s
-        if error_b or phase == 3:
-            pygame.time.delay(1000)
-
         # FPS
         clock.tick(60)
+
+        # if trial end, delay 1s
+        if error_b or phase == 3:
+            pygame.time.delay(10000)
 
     trial += 1
     target_num += 1

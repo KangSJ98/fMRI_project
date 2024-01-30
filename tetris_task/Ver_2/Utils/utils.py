@@ -1,3 +1,6 @@
+import numpy as np
+import random
+
 WIDTH_SCREEN, HEIGHT_SCREEN = 440, 480
 BLOCK_SIZE = 40
 WIDTH_GAME, HEIGHT_GAME = 11, 12
