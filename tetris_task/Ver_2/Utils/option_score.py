@@ -64,9 +64,15 @@ def option_score(target):
                         min_flat = flatness
                         min_flat_position = shape_position[2]
             if select_right:
-                result_database_right[shape_name] = [min_hole, min_hole_position, min_flat, min_flat_position]
+                result_database_right[shape_name] = {
+                    'hole' : [min_hole, min_hole_position],
+                    'flat' : [min_flat, min_flat_position]
+                }
             else:
-                result_database_left[shape_name] = [min_hole, min_hole_position, min_flat, min_flat_position]
+                result_database_left[shape_name] = {
+                    'hole' : [min_hole, min_hole_position],
+                    'flat' : [min_flat, min_flat_position]
+                }
     return result_database_left, result_database_right
 
 def count_orphan_hole(target, combine_matrix, shape_position):
@@ -193,7 +199,7 @@ def find_closest_shape(data, option, score):
     min_difference = float('inf')
 
     for shape_name, values in data.items():
-        difference = abs(score - values[2 * option])
+        difference = abs(score - values[option][0])
 
         if difference < min_difference:
             min_difference = difference
