@@ -1,16 +1,16 @@
 '''
 control_a = 4x1
 (5,0) ~ (5,3)
-control_b1 = 4x4 (left)
+control_b_left = 4x4 (left)
 (0,0) ~ (3,3)
-control_b2 = 4x4 (right)
+control_b_right = 4x4 (right)
 (7,0) ~ (10,3)
 target = 10x7 (6x7(target) + 4x7(combine))
 (2,2) ~ (8,11)
 
 1. present purpose(hole : orphan hole, flat : flatness) seperate by color
 2. choose the control a position
-3. choose control b1 or b2
+3. choose control b_left or b_right
     3-1. if the block is not complete, go to 1
 4. choose the best position (best score of present purpose), 1s delay
 '''
@@ -84,10 +84,10 @@ while not game_over:
 
     # option scroe
     left_score, right_score = option_score(map_target)
-    b1_name = random.choice(list(left_database.keys()))
-    b2_name = find_closest_shape(right_score, purpose, left_score[b1_name][purpose][0])
-    map_control_b1 = left_database[b1_name]
-    map_control_b2 = right_database[b2_name]
+    b_left_name = random.choice(list(left_database.keys()))
+    b_right_name = find_closest_shape(right_score, purpose, left_score[b_left_name][purpose][0])
+    map_control_b_left = left_database[b_left_name]
+    map_control_b_right = right_database[b_right_name]
 
     # background layer
     map_background = [[0] * WIDTH_GAME for _ in range(HEIGHT_GAME)]
@@ -123,7 +123,7 @@ while not game_over:
         if phase == 2:
             phase2_choice = move
             if move == 'left':
-                rotated_map = rotate_counterclockwise(map_control_b1)
+                rotated_map = rotate_counterclockwise(map_control_b_left)
                 shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
 
                 # check option b is possible
@@ -134,12 +134,12 @@ while not game_over:
                     rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                     phase = 3
 
-                map_control_b1 = rotate_clockwise(rotated_map)
-                shape_combine = map_control_b1 # shape_combine = control_a + control_b
+                map_control_b_left = rotate_clockwise(rotated_map)
+                shape_combine = map_control_b_left # shape_combine = control_a + control_b
             elif move == 'right':
-                print(map_control_b2)
+                print(map_control_b_right)
                 shape_position[1][0] = HEIGHT_B - shape_position[1][0] - 1
-                rotated_map = rotate_clockwise(map_control_b2)
+                rotated_map = rotate_clockwise(map_control_b_right)
                 shape_position[1] = hard_drop(shape_control_b, shape_position[1], rotated_map, WIDTH_B, HEIGHT_B)
 
                 # check option b is possible
@@ -150,15 +150,15 @@ while not game_over:
                     rotated_map[shape_position[1][1]][shape_position[1][0]] = 1
                     phase = 3
 
-                map_control_b2 = rotate_counterclockwise(rotated_map)
-                shape_combine = map_control_b2 # shape_combine = control_a + control_b
+                map_control_b_right = rotate_counterclockwise(rotated_map)
+                shape_combine = map_control_b_right # shape_combine = control_a + control_b
         # phase 3
         if phase == 3:
             # best position of current purpose
             if phase2_choice == 'left':
-                shape_position[2] = left_score[b1_name][purpose][1]
+                shape_position[2] = left_score[b_left_name][purpose][1]
             else:
-                shape_position[2] = right_score[b2_name][purpose][1]
+                shape_position[2] = right_score[b_right_name][purpose][1]
             print(f'shape position = {shape_position[2]}, shape_combine : {shape_combine}')
 
             # add shape_combine to target
@@ -177,8 +177,8 @@ while not game_over:
         # control_b
         for y in range(HEIGHT_B):
             for x in range(WIDTH_B):
-                map_background[y][x] = 2 - map_control_b1[y][x]
-                map_background[y][x + 7] = 2 - map_control_b2[y][x]
+                map_background[y][x] = 2 - map_control_b_left[y][x]
+                map_background[y][x + 7] = 2 - map_control_b_right[y][x]
         
         # target
         for y in range(4,HEIGHT_TARGET):
