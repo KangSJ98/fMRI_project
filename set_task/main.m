@@ -58,22 +58,3 @@ for tr = 1:opt.trNum
 end
 end
 
-% function main()
-%     opt = initiate();
-%     % 카드 생성
-%     myCard1 = card('circle', 'red', 1, 'outline');
-%     myCard2 = card('star', 'blue', 2, 'stripe');
-%     myCard3 = card('triangle', 'green', 3, 'filled');
-%     myCard3.shape = 'star';
-%     % 카드 표시
-%     DisplayCard(myCard1, opt.screenWidth/2, opt.screenHeight/4, opt);
-%     DisplayCard(myCard2, opt.screenWidth/2, opt.screenHeight/2, opt);
-%     DisplayCard(myCard3, opt.screenWidth/2, opt.screenHeight*3/4, opt);
-%     Screen('Flip', opt.window)
-%     % 키보드 입력 대기
-%     KbWait;
-%
-%     % 화면 닫기
-%     sca;
-% end
-
