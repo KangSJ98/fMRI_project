@@ -50,11 +50,18 @@ for tr = 1:opt.trNum
     
     if CheckAnswer(playerShape, answerCard)
         disp('정답');
+        Screen('FillRect', opt.window, [0 255 0], [0,0,opt.screenWidth, opt.screenHeight]);
     else
         disp('오답');
+        Screen('FillRect', opt.window, [255 0 0], [0,0,opt.screenWidth, opt.screenHeight]);
     end
+    Screen('Flip', opt.window);
     
-    
+    startTime = GetSecs; % 현재 시간 기록
+    while GetSecs - startTime <= 2
+    end
+    Screen('FillRect', opt.window, [255 255 255], [0,0,opt.screenWidth, opt.screenHeight]);
+    Screen('Flip', opt.window);
 end
 end
 
