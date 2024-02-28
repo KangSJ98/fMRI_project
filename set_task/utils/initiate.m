@@ -31,6 +31,7 @@ opt.optionRightX = opt.screenWidth * 2 / 3;
 opt.optionRightY = opt.screenHeight * 3 / 4;
 
 opt.trNum = 100;
+opt.gameEnd = false;
 
 % 도형 크기 설정
 opt.radius = opt.screenHeight / 16;
