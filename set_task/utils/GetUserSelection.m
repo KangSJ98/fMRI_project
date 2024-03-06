@@ -1,10 +1,10 @@
-function selection = GetUserSelection()
+function selection = GetUserSelection(opt)
 selection = randi([1, 2]); % 랜덤 선택
 
 startTime = GetSecs; % 현재 시간 기록
 while GetSecs - startTime <= 1
 end
-while GetSecs - startTime <= 4
+while GetSecs - startTime <= opt.trTime
     [keyIsDown, ~, keyCode] = KbCheck;
     if keyIsDown == true
         if keyCode(KbName('LeftArrow'))
@@ -13,8 +13,6 @@ while GetSecs - startTime <= 4
         elseif keyCode(KbName('RightArrow'))
             selection = 2;
             break;
-        elseif keyCode(KbName('Escape'))
-            selection = 3;
         end
     end
 end

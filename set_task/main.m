@@ -22,7 +22,6 @@ for tr = 1:opt.trNum
         
         
         options = ChooseOption(answerCard, feature, opt); % options = {'정답', '오답'}
-        disp(options);
         DisplayOption(feature, options, opt); % 선택 옵션 제시
         
         % 화면 업데이트

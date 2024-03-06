@@ -1,6 +1,8 @@
-function DisplayOption(feature, option, opt)
-optionLeft = card();
-optionRight = card();
+function DisplayOption(feature, option, opt, playerShape)
+% optionLeft = card();
+% optionRight = card();
+optionLeft = playerShape;
+optionRight = playerShape;
 
 optionLeft.(feature) = option{1};
 optionRight.(feature) = option{2};

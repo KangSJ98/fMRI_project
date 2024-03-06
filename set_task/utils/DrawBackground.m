@@ -1,6 +1,0 @@
-function DrawBackground(opt)
-
-
-
-end
-
