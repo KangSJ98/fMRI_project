@@ -1,4 +1,5 @@
 function main_ver2()
+addPath();
 
 opt = initiate();
 
@@ -36,7 +37,7 @@ for tr = 1:opt.trNum
         
     end
 
-    if tr > 100
+    if tr > 2
         disp('errorCorrection');
         playerShape = errorCorrection(card1, card2, playerShape, answerCard, opt);
     end
@@ -46,3 +47,9 @@ for tr = 1:opt.trNum
 end
 end
 
+function addPath()
+%% Add path for configuration, utilities, log
+curr_dir = fileparts(mfilename('fullpath'));
+parent_dir = fileparts(curr_dir);
+addpath(genpath(parent_dir));
+end
