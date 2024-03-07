@@ -17,10 +17,10 @@ DisplayCard(card1, opt.card1X, opt.card1Y, opt);
 DisplayCard(card2, opt.card2X, opt.card2Y, opt);
 
 if CheckAnswer(playerShape, answerCard)
-    disp('정답as');
+    disp('정답');
     Screen('FillRect', opt.window, [0 255 0], opt.card3Area);
 else
-    disp('오답as');
+    disp('오답');
     Screen('FillRect', opt.window, [255 0 0], opt.card3Area);
 end
 
@@ -31,4 +31,3 @@ while GetSecs - startTime <= opt.trTime
 end
 
 end
-
