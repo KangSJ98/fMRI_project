@@ -1,4 +1,4 @@
-function playerShape = errorCorrection(card1, card2, playerShape, answerCard, opt)
+function playerShape = ErrorCorrection(card1, card2, playerShape, answerCard, opt)
 optionLeft = playerShape;
 
 if isequal(playerShape, answerCard)
