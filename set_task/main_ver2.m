@@ -38,9 +38,10 @@ for tr = 1:opt.trNum
         DisplayChoice(card1, card2, playerShape, playerSelection, opt); % 선택한 옵션 표시
 
     end
-
-    if tr > 2
-        playerShape = errorCorrection(card1, card2, playerShape, answerCard, opt);
+    if tr == 21
+    disp('Error Correction trial start');
+    if tr > 20
+        playerShape = ErrorCorrection(card1, card2, playerShape, answerCard, opt);
     end
 
     Feedback(card1, card2, playerShape, answerCard, opt)
