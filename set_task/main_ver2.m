@@ -4,6 +4,7 @@ addPath();
 opt = initiate();
 
 for tr = 1:opt.trNum
+    WhiteOut(opt); % 0.5~0.7초 백색 화면
     
     card1 = SelectRandomCard(opt); % 무작위 카드 1 선택
     while true
@@ -33,12 +34,12 @@ for tr = 1:opt.trNum
         
         playerSelection = GetUserSelection(opt); % 플레이어 선택(왼쪽 1, 오른쪽 2)
         playerShape.(feature) = options{playerSelection}; % 선택 옵션 저장
-
         
+        DisplayChoice(card1, card2, playerShape, playerSelection, opt); % 선택한 옵션 표시
+
     end
 
     if tr > 2
-        disp('errorCorrection');
         playerShape = errorCorrection(card1, card2, playerShape, answerCard, opt);
     end
 
