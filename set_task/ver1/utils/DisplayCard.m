@@ -1,6 +1,4 @@
 function DisplayCard(card, center_x, center_y, opt)
-% card, x, y, opt
-
 %% 색상 설정
 switch card.color
     case 'red'

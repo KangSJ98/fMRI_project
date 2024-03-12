@@ -1,0 +1,16 @@
+function [opt, data] = getUserSelect(opt, data)
+[keyIsDown, ~, keyCode] = KbCheck;
+if keyIsDown
+    if keyCode(KbName('LeftArrow'))
+        opt.choice = 1;
+    elseif keyCode(KbName('RightArrow'))
+        opt.choice = 2;
+    elseif keyCode(KbName('Escape'))
+        opt.phaseDone = 1;
+        opt.expDone = 1;
+    end
+end
+
+
+end
+
