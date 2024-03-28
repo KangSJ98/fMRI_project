@@ -6,10 +6,7 @@ opt = initiate();
 while ~opt.expDone
     
     [opt,data] = trialReset(opt);
-    [opt,data] = phase1(opt,data);
-    [opt,data] = phase2(opt,data);
-    [opt,data] = phase3(opt,data);
-    [opt,data] = phase4(opt,data);
+    [opt,data] = makeCard(opt, data);
     
     opt = saveData(opt,data);
     

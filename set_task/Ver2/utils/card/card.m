@@ -1,23 +1,23 @@
 classdef card
     properties
         shape
+        shadow
         color
         number
-        shadow
     end
     
     methods
-        function obj = card(shape, color, number, shadow)
+        function obj = card(shape, shadow, color, number)
             if nargin < 1
                 shape = 'circle';
+                shadow = 'filled';
                 color = 'black';
                 number = '1';
-                shadow = 'filled';
             end
             obj.shape = shape;
+            obj.shadow = shadow;
             obj.color = color;
             obj.number = number;
-            obj.shadow = shadow;
         end
         
         function tf = isequal(obj1, obj2)

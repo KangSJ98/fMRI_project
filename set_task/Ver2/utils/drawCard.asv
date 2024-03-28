@@ -43,9 +43,9 @@ switch card.shape
         if strcmp('outline', card.shadow)
             outline_x = center_x + opt.radius * sind(angles) * 0.9;
             outline_y = center_y + opt.radius * cosd(angles) * 0.9;
-            Screen('FillPoly', opt.window, [255 255 255], [outline_x; outline_y]', 1);
+            Screen('FillPoly', opt.window, opt.backgroundColor, [outline_x; outline_y]', 1);
         end
-    % 사각형
+        % 사각형
     case 'square'
         % 정사각형의 세 꼭지점 좌표 계산
         angles = [45, 135, 225, 315];
@@ -56,9 +56,9 @@ switch card.shape
         if strcmp('outline', card.shadow)
             outline_x = center_x + opt.radius * sind(angles) * 0.9;
             outline_y = center_y + opt.radius * cosd(angles) * 0.9;
-            Screen('FillPoly', opt.window, [255 255 255], [outline_x; outline_y]', 1);
+            Screen('FillPoly', opt.window, opt.backgroundColor, [outline_x; outline_y]', 1);
         end
-    % 별
+        % 별
     case 'star'
         % 정삼각형의 세 꼭지점 좌표 계산
         angles = [60, 180, 300];
@@ -75,17 +75,17 @@ switch card.shape
         if strcmp('outline', card.shadow)
             outline_x = center_x + opt.radius * sind(angles) * 0.9;
             outline_y = center_y + opt.radius * cosd(angles) * 0.9;
-            Screen('FillPoly', opt.window, [255 255 255], [outline_x; outline_y]', 1);
+            Screen('FillPoly', opt.window, opt.backgroundColor, [outline_x; outline_y]', 1);
             angles = [60, 180, 300];
             outline_x = center_x + opt.radius * sind(angles) * 0.9;
             outline_y = center_y + opt.radius * cosd(angles) * 0.9;
-            Screen('FillPoly', opt.window, [255 255 255], [outline_x; outline_y]', 1);
+            Screen('FillPoly', opt.window, opt.backgroundColor, [outline_x; outline_y]', 1);
         end
-    % 원
+        % 원
     case 'circle'
         Screen('FillOval', opt.window, color, [center_x - opt.radius, center_y - opt.radius, center_x + opt.radius, center_y + opt.radius]);
         if strcmp('outline', card.shadow)
-            Screen('FillOval', opt.window, [255 255 255], [center_x - opt.radius * 0.9, center_y - opt.radius * 0.9, center_x + opt.radius * 0.9, center_y + opt.radius * 0.9]);
+            Screen('FillOval', opt.window, opt.backgroundColor, [center_x - opt.radius * 0.9, center_y - opt.radius * 0.9, center_x + opt.radius * 0.9, center_y + opt.radius * 0.9]);
         end
 end
 
@@ -113,10 +113,10 @@ if strcmp(card.shadow, 'stripe')
         stripe_bottom = stripe_top + stripe_height;
         
         % 영역 채우기
-        Screen('FillRect', opt.window, [255 255 255], [rect_left, stripe_top, rect_right, stripe_bottom]);
+        Screen('FillRect', opt.window, opt.backgroundColor, [rect_left, stripe_top, rect_right, stripe_bottom]);
     end
 end
 
 end
-end
+
 

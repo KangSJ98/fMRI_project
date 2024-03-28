@@ -9,18 +9,21 @@ for i = 1:length(opt.features) + 1
         opt.optionRightCard =opt.playerCard;
         opt.optionUpCard = opt.playerCard;
         
-        opt.optionLeftCard.(opt.feature) = opt.optionLeft.(opt.feature);
-        opt.optionRightCard.(opt.feature) = opt.optionRight.(opt.feature);
-        opt.optionUpCard.(opt.feature) = opt.optionUp.(opt.feature);
+        opt.optionLeftCard.(opt.feature) = opt.optionLeft.()
+        if randi([1,2]) == 1
+            opt.optionLeftCard.(opt.feature) = opt.answerCard.(opt.feature);
+            opt.optionRightCard.(opt.feature) = opt.wrongCard.(opt.feature);
+        else
+            opt.optionLeftCard.(opt.feature) = opt.wrongCard.(opt.feature);
+            opt.optionRightCard.(opt.feature) = opt.answerCard.(opt.feature);
+        end
     else
         if randi([1,2]) == 1
             opt.optionLeftCard = opt.playerCard;
             opt.optionRightCard = selectRandomCard(opt);
-            opt.optionUpCard = selectRandomCard(opt);
         else
             opt.optionLeftCard = selectRandomCard(opt);
             opt.optionRightCard = opt.playerCard;
-            opt.optionUpCard = selectRandomCard(opt);
         end
     end
     opt.saveOption = 1;
@@ -35,7 +38,7 @@ for i = 1:length(opt.features) + 1
     end
 end
 
-% feedback(opt);
+feedback(opt);
 
 end
 
